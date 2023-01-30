@@ -4,15 +4,17 @@ import (
 	"context"
 	"github/architecture/internal/entity"
 	"github/architecture/pkg/postgres"
+
+	"github.com/doug-martin/goqu/v9"
 )
 
 type customer struct {
-	db              postgres.PostgresDB
+	db              *postgres.PostgresDB
 	tableName       string
 	defaultCapacity uint
 }
 
-func NewCustomerRepo(db postgres.PostgresDB) *customer {
+func NewCustomerRepo(db *postgres.PostgresDB) *customer {
 	return &customer{
 		db:              db,
 		tableName:       "customer",
@@ -21,8 +23,8 @@ func NewCustomerRepo(db postgres.PostgresDB) *customer {
 }
 
 func (c *customer) Create(ctx context.Context, m *entity.Customer) error {
-	p := c.params(m, "create")
-	query := c.db.Builder.DialectWrapper.Insert(c.tableName).Cols(p)
+	p := c.paramsQu(m, "create")
+	query := c.db.Builder.DialectWrapper.Insert(c.tableName).Rows(p)
 
 	sql, params, err := query.ToSQL()
 	if err != nil {
@@ -37,8 +39,8 @@ func (c *customer) Create(ctx context.Context, m *entity.Customer) error {
 }
 
 func (c *customer) Update(ctx context.Context, m *entity.Customer) error {
-	p := c.params(m, "update")
-	query := c.db.Builder.DialectWrapper.Insert(c.tableName).Cols(p)
+	p := c.paramsQu(m, "update")
+	query := c.db.Builder.DialectWrapper.Update(c.tableName).Set(p)
 
 	sql, params, err := query.ToSQL()
 	if err != nil {
@@ -53,8 +55,15 @@ func (c *customer) Update(ctx context.Context, m *entity.Customer) error {
 }
 
 func (c *customer) Get(ctx context.Context, m map[string]string) (*entity.Customer, error) {
-	p := c.selectQu()
-	query := c.db.Builder.DialectWrapper.Insert(c.tableName).Cols(p)
+	// p := c.selectQu()
+	query := c.db.Builder.DialectWrapper.From(c.tableName)
+
+	for k, v := range m {
+		switch k {
+		case "guid":
+			query.Where(goqu.C("guid").Eq(v))
+		}
+	}
 
 	sql, params, err := query.ToSQL()
 	if err != nil {
@@ -77,7 +86,7 @@ func (c *customer) Get(ctx context.Context, m map[string]string) (*entity.Custom
 
 func (c *customer) List(ctx context.Context, m map[string]string) ([]*entity.Customer, error) {
 	p := c.selectQu()
-	query := c.db.Builder.DialectWrapper.Insert(c.tableName).Cols(p)
+	query := c.db.Builder.DialectWrapper.From(c.tableName).Select(p)
 
 	sql, params, err := query.ToSQL()
 	if err != nil {
@@ -109,7 +118,7 @@ func (c *customer) List(ctx context.Context, m map[string]string) ([]*entity.Cus
 	return list, nil
 }
 
-func (c *customer) params(m *entity.Customer, qType string) map[string]interface{} {
+func (c *customer) paramsQu(m *entity.Customer, qType string) map[string]interface{} {
 	params := map[string]interface{}{
 		"first_name": m.FirstName,
 		"last_name":  m.LastName,
@@ -123,8 +132,8 @@ func (c *customer) params(m *entity.Customer, qType string) map[string]interface
 	return params
 }
 
-func (c *customer) selectQu() []string {
-	return []string{
+func (c *customer) selectQu() []interface{} {
+	return []interface{}{
 		"guid",
 		"first_name",
 		"last_name",

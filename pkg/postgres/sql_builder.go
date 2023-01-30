@@ -9,7 +9,7 @@ type builder struct {
 	*goqu.DialectWrapper
 }
 
-func NewBuilder() *builder {
+func newBuilder() *builder {
 	d := goqu.Dialect("postgres")
 	return &builder{DialectWrapper: &d}
 }

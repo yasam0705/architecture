@@ -18,7 +18,7 @@ type PostgresDB struct {
 }
 
 func New(ctx context.Context, cfg *config.Config) (*PostgresDB, error) {
-	builder := NewBuilder()
+	builder := newBuilder()
 	db := &PostgresDB{Builder: builder}
 
 	err := db.connect(ctx, cfg)
@@ -70,4 +70,8 @@ func (p *PostgresDB) PgError(err error) error {
 		return entity.ErrNotFound
 	}
 	return err
+}
+
+func (p *PostgresDB) Close() {
+	p.Pool.Close()
 }

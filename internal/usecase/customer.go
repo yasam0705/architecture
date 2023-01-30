@@ -4,6 +4,8 @@ import (
 	"context"
 	"github/architecture/internal/entity"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type customer struct {
@@ -25,11 +27,24 @@ func NewCustomer(ctxTimeout time.Duration, repo CustomerRepo) *customer {
 	}
 }
 
+func (c *customer) beforeCreate(m *entity.Customer) error {
+	m.GUID = uuid.New().String()
+	m.CreatedAt = time.Now()
+	m.UpdatedAt = m.CreatedAt
+	return nil
+}
+func (c *customer) beforeUpdate(m *entity.Customer) error {
+	m.UpdatedAt = time.Now()
+	return nil
+}
+
 func (c *customer) Create(ctx context.Context, m *entity.Customer) error {
+	c.beforeCreate(m)
 	return c.repo.Create(ctx, m)
 }
 
 func (c *customer) Update(ctx context.Context, m *entity.Customer) error {
+	c.beforeUpdate(m)
 	return c.repo.Update(ctx, m)
 }
 

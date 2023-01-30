@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package customer_service;
+option go_package = "genproto/customer_service";
+
+
+service CustomerService {
+    rpc Get(GetRequest) returns (GetResponse);
+}
+
+message GetRequest {
+    map<string, string> filter = 1;
+}
+
+message GetResponse {
+    string guid = 1;
+    string first_name = 2;
+    string last_name = 3;
+    string created_at = 4;
+    string updated_at = 5;
+}
