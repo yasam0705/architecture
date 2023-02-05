@@ -6,7 +6,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func NewGRPCServer(cfg config.Config) (*grpc.Server, error) {
+func NewGRPCServer(cfg *config.Config) (*grpc.Server, error) {
 	s := grpc.NewServer(
 	// grpc.CallCustomCodec(grpc.),
 	)
