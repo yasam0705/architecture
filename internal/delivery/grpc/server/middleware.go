@@ -33,21 +33,16 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 			return handler(ctx, req)
 		}
 
+		client.Increment(method)
+
 		clientCountRequest := client.ConcurrentRequests[method]
-		fmt.Println(clientCountRequest, maxCountRequests)
-		if clientCountRequest > maxCountRequests-1 {
+		if clientCountRequest > maxCountRequests {
 			return nil, fmt.Errorf("error max concurrent requests, max: %d", maxCountRequests)
 		}
 
-		count := client.Increment(method)
-		fmt.Println(count, client.ConcurrentRequests)
-
 		resp, err = handler(ctx, req)
 
-		count = client.Decrement(method)
-		fmt.Println(count, client.ConcurrentRequests)
-
-		if count == 0 {
+		if count := client.Decrement(method); count == 0 {
 			defer RemoveClient(client)
 		}
 		return resp, err
