@@ -5,32 +5,17 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type Logger interface {
-	Debug(msg string, fields ...zap.Field)
-	Info(msg string, fields ...zap.Field)
-	Warn(msg string, fields ...zap.Field)
-	DPanic(msg string, fields ...zap.Field)
-	Panic(msg string, fields ...zap.Field)
-	Fatal(msg string, fields ...zap.Field)
-	Error(msg string, fields ...zap.Field)
-	Close()
-}
-
-type logger struct {
-	logger *zap.Logger
-}
-
-func New(level, environment, fileName string) (*logger, error) {
-	config := zap.NewProductionConfig()
+func New(level, environment, fileName string) (*zap.Logger, error) {
+	config := zap.NewDevelopmentConfig()
+	encoder := zap.NewDevelopmentEncoderConfig()
 	opts := []zap.Option{zap.AddCaller(), zap.AddCallerSkip(1)}
+
+	encoder.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoder.EncodeDuration = zapcore.MillisDurationEncoder
 
 	config.OutputPaths = []string{"stderr", fileName}
 	config.ErrorOutputPaths = []string{"stderr"}
-	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-
-	if environment == "develop" {
-		config.Development = true
-	}
+	config.EncoderConfig = encoder
 
 	switch level {
 	case "debug":
@@ -56,39 +41,5 @@ func New(level, environment, fileName string) (*logger, error) {
 		return nil, err
 	}
 
-	return &logger{
-		logger: log,
-	}, nil
-}
-
-func (l *logger) Debug(msg string, fields ...zap.Field) {
-	l.logger.Debug(msg, fields...)
-}
-
-func (l *logger) Info(msg string, fields ...zap.Field) {
-	l.logger.Info(msg, fields...)
-}
-
-func (l *logger) Warn(msg string, fields ...zap.Field) {
-	l.logger.Warn(msg, fields...)
-}
-
-func (l *logger) DPanic(msg string, fields ...zap.Field) {
-	l.logger.DPanic(msg, fields...)
-}
-
-func (l *logger) Panic(msg string, fields ...zap.Field) {
-	l.logger.Panic(msg, fields...)
-}
-
-func (l *logger) Fatal(msg string, fields ...zap.Field) {
-	l.logger.Fatal(msg, fields...)
-}
-
-func (l *logger) Error(msg string, fields ...zap.Field) {
-	l.logger.Error(msg, fields...)
-}
-
-func (l *logger) Close() {
-	l.logger.Sync()
+	return log, nil
 }

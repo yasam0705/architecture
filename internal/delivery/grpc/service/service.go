@@ -4,17 +4,17 @@ import (
 	"context"
 	gp "github/architecture/genproto/customer_service"
 	"github/architecture/internal/usecase"
-	"github/architecture/pkg/logger"
-	"time"
+
+	"go.uber.org/zap"
 )
 
 type service struct {
-	log             logger.Logger
+	log             *zap.Logger
 	customerUseCase usecase.CustomerService
 	gp.UnsafeCustomerServiceServer
 }
 
-func NewRPC(log logger.Logger, customerUseCase usecase.CustomerService) *service {
+func NewRPC(log *zap.Logger, customerUseCase usecase.CustomerService) *service {
 	return &service{
 		log:             log,
 		customerUseCase: customerUseCase,
@@ -22,6 +22,6 @@ func NewRPC(log logger.Logger, customerUseCase usecase.CustomerService) *service
 }
 
 func (s *service) Get(ctx context.Context, req *gp.GetRequest) (*gp.GetResponse, error) {
-	time.Sleep(time.Second * 8)
+	// time.Sleep(time.Second * 8)
 	return &gp.GetResponse{}, nil
 }

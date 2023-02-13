@@ -37,9 +37,8 @@ func Run(cfg *config.Config) error {
 	customerRepo := repo.NewCustomerRepo(db)
 
 	customerUseCase := usecase.NewCustomer(cfg.ContextTimeout, customerRepo)
-	_ = customerUseCase
 
-	s, err := grpc_server.NewGRPCServer(cfg)
+	s, err := grpc_server.NewGRPCServer(cfg, logger)
 	if err != nil {
 		return err
 	}
@@ -66,7 +65,8 @@ func Run(cfg *config.Config) error {
 
 	<-c
 	db.Close()
-	logger.Close()
+	logger.Sync()
+	s.GracefulStop()
 
 	log.Println("service stop")
 	return nil
