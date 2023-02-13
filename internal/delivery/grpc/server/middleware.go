@@ -43,7 +43,7 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		resp, err = handler(ctx, req)
 
 		if count := client.Decrement(method); count == 0 {
-			defer RemoveClient(client)
+			defer client.Remove()
 		}
 		return resp, err
 	}

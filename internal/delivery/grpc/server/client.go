@@ -39,6 +39,6 @@ func (c *Client) Decrement(method string) int {
 	return c.ConcurrentRequests[method]
 }
 
-func RemoveClient(client *Client) {
-	delete(pool, client.UserId)
+func (c *Client) Remove() {
+	delete(pool, c.UserId)
 }
