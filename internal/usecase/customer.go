@@ -39,12 +39,16 @@ func (c *customer) beforeUpdate(m *entity.Customer) error {
 }
 
 func (c *customer) Create(ctx context.Context, m *entity.Customer) error {
-	c.beforeCreate(m)
+	if err := c.beforeCreate(m); err != nil {
+		return err
+	}
 	return c.repo.Create(ctx, m)
 }
 
 func (c *customer) Update(ctx context.Context, m *entity.Customer) error {
-	c.beforeUpdate(m)
+	if err := c.beforeUpdate(m); err != nil {
+		return err
+	}
 	return c.repo.Update(ctx, m)
 }
 
