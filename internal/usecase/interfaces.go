@@ -15,6 +15,13 @@ type CustomerRepo interface {
 	List(ctx context.Context, m map[string]string) ([]*entity.Customer, error)
 }
 
+type FileRepo interface {
+	Get(ctx context.Context, guid string) (*entity.File, error)
+	List(ctx context.Context, filter entity.Parameter) ([]*entity.File, error)
+	Create(ctx context.Context, m *entity.File) error
+	Update(ctx context.Context, m *entity.File) error
+}
+
 // ===============================
 // =========== WEB API ===========
 // ===============================

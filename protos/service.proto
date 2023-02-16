@@ -1,21 +1,54 @@
 syntax = "proto3";
 
-package customer_service;
-option go_package = "genproto/customer_service";
+package file_processing;
+option go_package = "genproto/file_processing";
 
 
-service CustomerService {
+service FileProcessingService {
+    rpc Create(CreateRequest) returns (CreateResponse);
+    rpc List(ListRequest) returns (ListResponse);
     rpc Get(GetRequest) returns (GetResponse);
+    rpc Update(UpdateRequest) returns (UpdateResponse);
+
+}
+
+message File {
+    string guid = 1;
+    string file_name = 2;
+    string updated_at = 3;
+    string created_at = 4;
+}
+
+message CreateRequest {
+    string file = 1;
+}
+
+message CreateResponse {
+    string guid = 1;
+}
+
+message ListRequest {
+    uint64 limit = 1;
+    uint64 offset = 2;
+    map<string, string> filter = 3;
+}
+
+message ListResponse {
+    repeated File list = 1;
 }
 
 message GetRequest {
-    map<string, string> filter = 1;
+    string guid = 1;
 }
 
 message GetResponse {
-    string guid = 1;
-    string first_name = 2;
-    string last_name = 3;
-    string created_at = 4;
-    string updated_at = 5;
+    File file = 1;
+}
+
+message UpdateRequest {
+    File file = 1;
+}
+
+message UpdateResponse {
+    string updated_at = 1;
 }

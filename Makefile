@@ -1,11 +1,11 @@
 -include .env
 export
+CURRENT_DIR=${PWD}
 
 .PHONY: run
 run:
 	go run cmd/app/main.go
 
-
-.PHONY: proto-gen
-proto-gen:
-	protoc protos/*.proto -I. --go_out=.
+gen-proto:
+	protoc -I=${CURRENT_DIR}/protos --go_out=${CURRENT_DIR} \
+		--go-grpc_out=${CURRENT_DIR} ${CURRENT_DIR}/protos/*.proto

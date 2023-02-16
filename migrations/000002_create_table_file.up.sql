@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS "file" (
+    "guid"          UUID NOT NULL,
+    "user_id"       UUID NOT NULL,
+    "file_name"     VARCHAR NOT NULL DEFAULT '',
+    "created_at"    TIMESTAMP(0) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    "updated_at"    TIMESTAMP(0) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);

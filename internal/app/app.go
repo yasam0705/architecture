@@ -2,10 +2,12 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"github/architecture/config"
-	"github/architecture/genproto/customer_service"
+	"github/architecture/genproto/file_processing"
 	grpc_server "github/architecture/internal/delivery/grpc/server"
 	grpc_service "github/architecture/internal/delivery/grpc/service"
+	"github/architecture/internal/entity"
 	"github/architecture/internal/usecase"
 	"github/architecture/internal/usecase/repo"
 	"github/architecture/pkg/logger"
@@ -35,8 +37,34 @@ func Run(cfg *config.Config) error {
 	}
 
 	customerRepo := repo.NewCustomerRepo(db)
+	fileRepo := repo.NewFileRepo(db)
 
 	customerUseCase := usecase.NewCustomer(cfg.ContextTimeout, customerRepo)
+	fileUseCase := usecase.NewFile(cfg.ContextTimeout, fileRepo)
+
+	ff := &entity.File{
+		UserId:   "2adebc26-5538-43c6-81d4-1c2c283f86d0",
+		FileName: "asdasd.name",
+	}
+	err = fileUseCase.Create(ctx, ff)
+	if err != nil {
+		fmt.Println("error create")
+		return err
+	}
+
+	ff, err = fileUseCase.Get(ctx, ff.Guid)
+	if err != nil {
+		fmt.Println("error get")
+		return err
+	}
+	fmt.Printf("=========== %+v\n", ff)
+
+	ll, err := fileUseCase.List(ctx, map[string]string{"user_id": ff.UserId})
+	if err != nil {
+		fmt.Println("error list")
+		return err
+	}
+	fmt.Printf("=========== %+v\n", ll[0])
 
 	s, err := grpc_server.NewGRPCServer(cfg, logger)
 	if err != nil {
@@ -53,7 +81,7 @@ func Run(cfg *config.Config) error {
 		customerUseCase,
 	)
 
-	customer_service.RegisterCustomerServiceServer(s, rpc)
+	file_processing.RegisterFileProcessingServiceServer(s, rpc)
 
 	logger.Info("service is running...", zap.String("port", cfg.RpcPort))
 	if err = s.Serve(l); err != nil {
