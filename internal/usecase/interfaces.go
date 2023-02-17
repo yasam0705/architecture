@@ -17,7 +17,7 @@ type CustomerRepo interface {
 
 type FileRepo interface {
 	Get(ctx context.Context, guid string) (*entity.File, error)
-	List(ctx context.Context, filter entity.Parameter) ([]*entity.File, error)
+	List(ctx context.Context, limit, offset uint64, filter entity.Parameter) ([]*entity.File, error)
 	Create(ctx context.Context, m *entity.File) error
 	Update(ctx context.Context, m *entity.File) error
 }

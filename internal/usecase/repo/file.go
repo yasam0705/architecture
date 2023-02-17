@@ -4,6 +4,8 @@ import (
 	"context"
 	"github/architecture/internal/entity"
 	"github/architecture/pkg/postgres"
+
+	"github.com/doug-martin/goqu/v9"
 )
 
 type file struct {
@@ -21,8 +23,7 @@ func NewFileRepo(db *postgres.PostgresDB) *file {
 }
 
 func (f *file) Get(ctx context.Context, guid string) (*entity.File, error) {
-	// p := f.selectQu()
-	query := f.db.Builder.DialectWrapper.From(f.tableName).Select("guid", "user_id", "file_name", "created_at", "updated_at")
+	query := f.selectQu().Where(goqu.Ex{"guid": guid})
 
 	sql, params, err := query.ToSQL()
 	if err != nil {
@@ -45,9 +46,20 @@ func (f *file) Get(ctx context.Context, guid string) (*entity.File, error) {
 	return &result, nil
 }
 
-func (f *file) List(ctx context.Context, filter entity.Parameter) ([]*entity.File, error) {
-	// p := f.selectQu()
-	query := f.db.Builder.DialectWrapper.From(f.tableName).Select("guid", "user_id", "file_name", "created_at", "updated_at")
+func (f *file) List(ctx context.Context, limit, offset uint64, filter entity.Parameter) ([]*entity.File, error) {
+	query := f.selectQu()
+
+	for k, v := range filter {
+		switch k {
+		case "user_id":
+			query = query.Where(goqu.Ex{k: v})
+		}
+	}
+
+	if limit != 0 {
+		query = query.Limit(uint(limit)).Offset(uint(offset))
+
+	}
 
 	sql, params, err := query.ToSQL()
 	if err != nil {
@@ -96,7 +108,7 @@ func (f *file) Create(ctx context.Context, m *entity.File) error {
 
 func (f *file) Update(ctx context.Context, m *entity.File) error {
 	p := f.paramsQu(m, "update")
-	query := f.db.Builder.DialectWrapper.Update(f.tableName).Set(p)
+	query := f.db.Builder.DialectWrapper.Update(f.tableName).Set(p).Where(goqu.Ex{"guid": m.Guid})
 
 	sql, params, err := query.ToSQL()
 	if err != nil {
@@ -110,14 +122,18 @@ func (f *file) Update(ctx context.Context, m *entity.File) error {
 	return nil
 }
 
-func (f *file) selectQu() interface{} {
-	return []string{
-		"guid",
-		"user_id",
-		"file_name",
-		"created_at",
-		"updated_at",
-	}
+func (f *file) selectQu() *goqu.SelectDataset {
+	return f.db.
+		Builder.
+		DialectWrapper.
+		From(f.tableName).
+		Select(
+			"guid",
+			"user_id",
+			"file_name",
+			"created_at",
+			"updated_at",
+		)
 }
 
 func (c *file) paramsQu(m *entity.File, qType string) map[string]interface{} {
