@@ -48,3 +48,10 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		return resp, err
 	}
 }
+
+func UnaryServerInterceptorErrorHandling() grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+		resp, err = handler(ctx, req)
+		return resp, Error(err)
+	}
+}

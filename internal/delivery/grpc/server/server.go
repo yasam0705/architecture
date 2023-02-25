@@ -14,11 +14,12 @@ import (
 func NewGRPCServer(cfg *config.Config, log *zap.Logger) (*grpc.Server, error) {
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			grpc_recovery.UnaryServerInterceptor(),
-			UnaryServerInterceptor(),
-			grpc_ctxtags.UnaryServerInterceptor(),
-			otelgrpc.UnaryServerInterceptor(),
 			grpc_zap.UnaryServerInterceptor(log),
+			grpc_recovery.UnaryServerInterceptor(),
+			grpc_ctxtags.UnaryServerInterceptor(),
+			UnaryServerInterceptor(),
+			otelgrpc.UnaryServerInterceptor(),
+			UnaryServerInterceptorErrorHandling(),
 		),
 	)
 
